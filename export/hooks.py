@@ -286,5 +286,6 @@ override_whitelisted_methods = {
 }
 
 naming_series_variables = {
-    "EXFY": "export.naming.parse_fiscal_year",
+    "EXFY": "export.naming.parse_fiscal_year",          # e.g. 25-26
+    "EXFYC": "export.naming.parse_fiscal_year_compact", # e.g. 2526
 }

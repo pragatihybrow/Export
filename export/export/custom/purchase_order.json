@@ -966,6 +966,15 @@
  "links": [],
  "property_setters": [
   {
+   "doc_type": "Purchase Order",
+   "doctype_or_field": "DocField",
+   "field_name": "dispatch_address",
+   "name": "Purchase Order-dispatch_address-reqd",
+   "property": "reqd",
+   "property_type": "Check",
+   "value": "1"
+  },
+  {
    "_assign": null,
    "_comments": null,
    "_liked_by": null,
