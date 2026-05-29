@@ -545,12 +545,12 @@ function toggle_cif_total_by_currency(frm) {
 function toggle_sub_items_columns(frm) {
     if (!frm.fields_dict.custom_sub_items) return;
 
-    const is_export = frm.doc.custom_order_type === "Export";
+    const order_type = frm.doc.custom_order_type;
 
     let grid = frm.fields_dict.custom_sub_items.grid;
     let columns_to_show = [];
 
-    if (is_export) {
+    if (order_type === "Export") {
         // Display columns for Export order type
         columns_to_show = [
             { fieldname: 'parent_item', columns: 1 },
@@ -559,8 +559,16 @@ function toggle_sub_items_columns(frm) {
             { fieldname: 'qty', columns: 1 },
             { fieldname: 'custom_net_weight', columns: 1 },
         ];
+    } else if (order_type === "Delivery Challan") {
+        columns_to_show = [
+            { fieldname: 'parent_item', columns: 2 },
+            { fieldname: 'sub_item_code', columns: 2 },
+            { fieldname: 'sub_description', columns: 2 },
+            { fieldname: 'rate', columns: 1 },
+            { fieldname: 'amount', columns: 1 },
+        ];
     } else {
-        // Reset to default columns for non-Export order types
+        // Reset to default columns for other order types
         columns_to_show = [];
     }
 
@@ -586,13 +594,12 @@ function toggle_sub_items_columns(frm) {
 function toggle_export_fields(frm) {
     if (!frm.fields_dict.items) return;
 
-    const is_export = frm.doc.custom_order_type === "Export";
+    const order_type = frm.doc.custom_order_type;
 
     let grid = frm.fields_dict.items.grid;
     let columns_to_show = [];
 
-    if (is_export) {
-        // Display columns for Export order type
+    if (order_type === "Export") {
         columns_to_show = [
             { fieldname: 'custom_customer_order_number', columns: 1 },
             { fieldname: 'custom_sales_order_no', columns: 1 },
@@ -601,8 +608,16 @@ function toggle_export_fields(frm) {
             { fieldname: 'qty', columns: 1 },
             { fieldname: 'total_weight', columns: 1 },
         ];
+    } else if (order_type === "Delivery Challan") {
+        columns_to_show = [
+            { fieldname: 'item_code', columns: 2 },
+            { fieldname: 'item_name', columns: 2 },
+            { fieldname: 'description', columns: 2 },
+            { fieldname: 'rate', columns: 1 },
+            { fieldname: 'amount', columns: 1 },
+        ];
     } else {
-        // Reset to default columns for non-Export order types
+        // Default columns for other order types
         columns_to_show = [
             { fieldname: 'custom_customer_order_number', columns: 1 },
             { fieldname: 'custom_sales_order_no', columns: 1 },

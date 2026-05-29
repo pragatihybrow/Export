@@ -1005,7 +1005,7 @@
    "name": "Delivery Note-custom_order_type",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "\nSales\nMaintenance\nShopping Cart\nDomestic\nExport",
+   "options": "\nSales\nMaintenance\nShopping Cart\nDomestic\nExport\nDelivery Challan",
    "owner": "Administrator",
    "permlevel": 0,
    "placeholder": null,
