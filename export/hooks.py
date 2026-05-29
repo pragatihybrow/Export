@@ -284,3 +284,7 @@ override_whitelisted_methods = {
     "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice":
         "export.api.delivery_note_to_si.make_sales_invoice_custom",
 }
+
+naming_series_variables = {
+    "EXFY": "export.naming.parse_fiscal_year",
+}
