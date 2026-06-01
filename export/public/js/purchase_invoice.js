@@ -253,7 +253,8 @@ function toggle_export_fields(frm) {
             { fieldname: 'custom_net_weight', columns: 1 },
             { fieldname: 'custom_freight__insurance_', columns: 1 },
             { fieldname: 'custom_cif_unit_price_', columns: 1 },
-            { fieldname: 'custom___cif_total_amount', columns: 1 }
+            { fieldname: 'custom___cif_total_amount', columns: 1 },
+            { fieldname: 'apply_tds', columns: 1 }
         ];
     } else if (!frm.doc.custom_order_type) {
         // Empty order type — show basic columns
