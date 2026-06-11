@@ -8,7 +8,8 @@
  "field_order": [
   "sub_item_code",
   "sub_item_name",
-  "sub_description"
+  "sub_description",
+  "qty"
  ],
  "fields": [
   {
@@ -29,6 +30,13 @@
    "fieldtype": "Small Text",
    "in_list_view": 1,
    "label": "Sub Description"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "precision": "9"
   }
  ],
  "grid_page_length": 50,

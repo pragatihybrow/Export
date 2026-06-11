@@ -263,6 +263,9 @@ doc_events = {
     "Item": {
         "before_save": "export.api.item.before_save",
     },
+    "BOM": {
+        "on_submit": "export.api.item.bom_on_submit",
+    },
     "Purchase Invoice": {
         "validate": "export.api.purchase_invoice.validate",
     },

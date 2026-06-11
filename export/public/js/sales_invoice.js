@@ -658,7 +658,38 @@ function toggle_export_fields(frm) {
     }
 }
 
+function update_sub_items_qty(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];
+    if (!row.item_code || !row.custom_row_uid) return;
 
+    const parent_qty = flt(row.qty) || 0;
+    const uid = row.custom_row_uid;
+
+    frappe.call({
+        method: 'frappe.client.get',
+        args: { doctype: 'Item', name: row.item_code },
+        callback: function(r) {
+            if (!r.message || !r.message.custom_sub_items || !r.message.custom_sub_items.length) return;
+
+            // Build a base-qty map: sub_item_code → configured qty from Item master
+            let base_qty_map = {};
+            r.message.custom_sub_items.forEach(function(si) {
+                base_qty_map[si.sub_item_code] = flt(si.qty) || 1;
+            });
+
+            // Update matching sub-items in the SO
+            let updated = false;
+            (frm.doc.custom_sub_items || []).forEach(function(sub) {
+                if (sub.parent_row_uid !== uid) return;
+                let base = base_qty_map[sub.sub_item_code] || flt(sub.qty) || 1;
+                frappe.model.set_value('Sales Invoice Sub Items', sub.name, 'qty', parent_qty * base);
+                updated = true;
+            });
+
+            if (updated) frm.refresh_field('custom_sub_items');
+        }
+    });
+}
 
 frappe.ui.form.on("Sales Invoice Item", {
     items_add(frm, cdt, cdn) {
@@ -675,6 +706,7 @@ frappe.ui.form.on("Sales Invoice Item", {
     qty(frm, cdt, cdn) {
         calculate_net_weight(frm, cdt, cdn);
         calculate_cif_values(frm, cdt, cdn);
+        update_sub_items_qty(frm, cdt, cdn);
         // setTimeout(() => recalculate_si_totals(frm), 150);
     },
 
@@ -721,6 +753,7 @@ frappe.ui.form.on("Sales Invoice Item", {
                             sub_row.sub_item_code = sub_item.sub_item_code;
                             sub_row.sub_item_name = sub_item.sub_item_name;
                             sub_row.sub_description = sub_item.sub_description;
+                            sub_row.qty = sub_item.qty;
                         });
 
                         frm.refresh_field('custom_sub_items');

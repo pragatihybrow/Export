@@ -2,6 +2,25 @@
  "custom_fields": [
   {
    "dt": "Item",
+   "name": "Item-custom_sub_items",
+   "fieldname": "custom_sub_items",
+   "fieldtype": "Table",
+   "label": "Sub Items",
+   "options": "Item Sub Items",
+   "insert_after": "stock_uom",
+   "in_list_view": 0,
+   "read_only": 1,
+   "reqd": 0,
+   "hidden": 0,
+   "bold": 0,
+   "print_hide": 0,
+   "no_copy": 0,
+   "allow_on_submit": 0,
+   "permlevel": 0,
+   "is_system_generated": 0
+  },
+  {
+   "dt": "Item",
    "name": "Item-custom_is_kit",
    "fieldname": "custom_is_kit",
    "fieldtype": "Check",
