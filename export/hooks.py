@@ -269,6 +269,15 @@ doc_events = {
     "Purchase Invoice": {
         "validate": "export.api.purchase_invoice.validate",
     },
+    "Journal Entry": {
+        "before_save": "export.api.journal_entry.round_exchange_gain_loss_amounts",
+    },
+    "Payment Entry": {
+        "on_submit": "export.api.payment_entry.round_payment_entry_gl_amounts",
+    },
+    "Sales Invoice": {
+        "on_submit": "export.api.sales_invoice.round_sales_invoice_gl_amounts",
+    },
 }
 
 override_whitelisted_methods = {

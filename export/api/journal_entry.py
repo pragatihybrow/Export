@@ -1,5 +1,25 @@
 import frappe
-from frappe.utils import cstr
+from frappe.utils import cstr, flt
+
+
+def round_exchange_gain_loss_amounts(doc, method=None):
+	"""
+	Core ERPNext skips rounding of debit/credit for Exchange Gain Or Loss
+	journal entries (see set_amounts_in_company_currency in
+	erpnext/accounts/doctype/journal_entry/journal_entry.py), so the raw
+	floating point difference gets written straight to the ledger.
+	Re-round here, after core validate() has already run, so these entries
+	land on clean 2-decimal values like every other journal entry.
+	"""
+	if doc.voucher_type != "Exchange Gain Or Loss":
+		return
+
+	precision = doc.precision("debit", "accounts")
+	for row in doc.accounts:
+		row.debit = flt(row.debit, precision)
+		row.credit = flt(row.credit, precision)
+		row.debit_in_account_currency = flt(row.debit_in_account_currency, precision)
+		row.credit_in_account_currency = flt(row.credit_in_account_currency, precision)
 
 
 @frappe.whitelist()
