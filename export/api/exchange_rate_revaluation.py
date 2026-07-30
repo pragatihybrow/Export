@@ -6,12 +6,11 @@ from frappe.utils import get_link_to_form, getdate, nowdate
 @frappe.whitelist()
 def make_reverse_journal_draft(docname, posting_date=None):
 	"""
-	Create the reversal Journal Entry(s) for an Exchange Rate Revaluation using a
-	user-chosen posting date, left as a Draft for review instead of auto-submitting.
+	Create and submit the reversal Journal Entry(s) for an Exchange Rate Revaluation
+	using a user-chosen posting date instead of the hardcoded nowdate() core uses.
 
 	Mirrors the lookup logic in erpnext.accounts.doctype.exchange_rate_revaluation
-	.exchange_rate_revaluation.ExchangeRateRevaluation.make_reverse_journal, which
-	hardcodes posting_date to today and calls reversal.submit() unconditionally.
+	.exchange_rate_revaluation.ExchangeRateRevaluation.make_reverse_journal.
 	"""
 	frappe.has_permission("Journal Entry", "write", throw=True)
 
@@ -44,10 +43,11 @@ def make_reverse_journal_draft(docname, posting_date=None):
 	for x in journals:
 		reversal = make_reverse_journal_entry(x)
 		reversal.posting_date = posting_date
-		reversal.insert(ignore_permissions=True)
+		reversal.flags.ignore_permissions = True
+		reversal.submit()
 		created.append(reversal.name)
 		frappe.msgprint(
-			_("Reversal journal for {0} has been created as a draft: {1}").format(
+			_("Reversal journal for {0} has been created: {1}").format(
 				frappe.bold(x), get_link_to_form("Journal Entry", reversal.name)
 			)
 		)
