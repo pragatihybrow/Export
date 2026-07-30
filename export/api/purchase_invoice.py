@@ -3,6 +3,7 @@ import frappe
 
 def validate(doc, method=None):
     _validate_bill_no_unique(doc)
+    _validate_credit_to_currency(doc)
 
 
 def _validate_bill_no_unique(doc):
@@ -42,4 +43,29 @@ def _validate_bill_no_unique(doc):
                 date=frappe.utils.formatdate(duplicate.posting_date),
             ),
             title=frappe._("Duplicate Supplier Invoice No"),
+        )
+
+
+def _validate_credit_to_currency(doc):
+    """
+    Ensure the payable account selected in Credit To matches the invoice's
+    transaction currency. Prevents postings like Creditors INR being used on
+    a USD invoice, which silently misstates the supplier's ledger balance.
+    """
+    if not doc.credit_to or not doc.currency:
+        return
+
+    account_currency = frappe.get_cached_value("Account", doc.credit_to, "account_currency")
+    if account_currency and account_currency != doc.currency:
+        frappe.throw(
+            frappe._(
+                "Credit To account {account} is in {account_currency}, "
+                "but this invoice's currency is {doc_currency}. "
+                "Please select a Creditors account in {doc_currency}."
+            ).format(
+                account=frappe.bold(doc.credit_to),
+                account_currency=frappe.bold(account_currency),
+                doc_currency=frappe.bold(doc.currency),
+            ),
+            title=frappe._("Currency Mismatch"),
         )

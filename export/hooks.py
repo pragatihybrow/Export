@@ -259,7 +259,9 @@ doctype_js = {
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
     "Purchase Invoice": "public/js/purchase_invoice.js",
-    "Journal Entry": "public/js/journal_entry.js"
+    "Journal Entry": "public/js/journal_entry.js",
+    "Exchange Rate Revaluation": "public/js/exchange_rate_revaluation.js",
+    "Payment Entry": "public/js/payment_entry.js"
 }
 
 
@@ -277,9 +279,11 @@ doc_events = {
         "before_save": "export.api.journal_entry.round_exchange_gain_loss_amounts",
     },
     "Payment Entry": {
+        "validate": "export.api.payment_entry.validate",
         "on_submit": "export.api.payment_entry.round_payment_entry_gl_amounts",
     },
     "Sales Invoice": {
+        "validate": "export.api.sales_invoice.validate",
         "on_submit": "export.api.sales_invoice.round_sales_invoice_gl_amounts",
     },
 }
