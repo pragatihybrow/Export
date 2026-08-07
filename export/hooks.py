@@ -261,7 +261,8 @@ doctype_js = {
     "Purchase Invoice": "public/js/purchase_invoice.js",
     "Journal Entry": "public/js/journal_entry.js",
     "Exchange Rate Revaluation": "public/js/exchange_rate_revaluation.js",
-    "Payment Entry": "public/js/payment_entry.js"
+    "Payment Entry": "public/js/payment_entry.js",
+    "Quotation": "public/js/quotation.js"
 }
 
 
