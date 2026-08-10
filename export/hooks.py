@@ -281,6 +281,7 @@ doc_events = {
     },
     "Payment Entry": {
         "validate": "export.api.payment_entry.validate",
+        "before_update_after_submit": "export.api.payment_entry.validate",
         "on_submit": "export.api.payment_entry.round_payment_entry_gl_amounts",
     },
     "Sales Invoice": {
