@@ -25,7 +25,7 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/export/css/export.css"
+app_include_css = "/assets/export/css/export.css"
 # app_include_js = "/assets/export/js/export.js"
 
 # include js, css files in header of web template
@@ -264,6 +264,14 @@ doctype_js = {
     "Payment Entry": "public/js/payment_entry.js",
     "Quotation": "public/js/quotation.js"
 }
+
+# Fixtures
+# --------
+# Records exported to fixtures/*.json so they deploy with the app code
+# instead of only existing in whichever site's database they were created on.
+# fixtures = [
+#     {"dt": "Print Format", "filters": [["name", "like", "GME %"]]}
+# ]
 
 
 doc_events = {
