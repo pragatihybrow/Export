@@ -299,6 +299,9 @@ doc_events = {
 }
 
 override_whitelisted_methods = {
+    "erpnext.accounts.doctype.bank_reconciliation_tool.bank_reconciliation_tool.get_linked_payments":
+        "export.api.bank_reconciliation.get_linked_payments_with_deductions",
+
     "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice":
         "export.config.py.sales_order.make_sales_invoice_custom",
 
