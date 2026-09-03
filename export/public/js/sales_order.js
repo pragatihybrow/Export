@@ -2,6 +2,14 @@
  * SALES ORDER (PARENT)
  ************************************/
 frappe.ui.form.on("Sales Order", {
+    setup(frm) {
+        frm.set_query("custom_transporter", {
+            filters: {
+                is_transporter: 1,
+            },
+        });
+    },
+
     refresh(frm) {
         toggle_export_fields(frm);
         toggle_cif_total_by_currency(frm);
