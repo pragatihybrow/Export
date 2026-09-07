@@ -296,6 +296,28 @@ doc_events = {
         "validate": "export.api.sales_invoice.validate",
         "on_submit": "export.api.sales_invoice.round_sales_invoice_gl_amounts",
     },
+    # Backfill custom_row_uid + KIT sub-items for any item row that has a KIT
+    # (Item.custom_sub_items) definition but no linked sub-items yet — covers
+    # rows created any way other than picking item_code fresh in the browser
+    # (repeated "Get Items From", bulk/template import, duplicated grid rows).
+    # See export/api/kit_utils.py.
+    #
+    # "validate" only fires on draft saves — Frappe routes a submitted
+    # document's save through before_update_after_submit/on_update_after_submit
+    # instead, so both are hooked here to cover edits made after submission too
+    # (e.g. re-running "Get Items From" on an already-submitted Delivery Note).
+    "Sales Order": {
+        "validate": "export.api.kit_utils.validate_kit_row_uids",
+        "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+    },
+    "Delivery Note": {
+        "validate": "export.api.kit_utils.validate_kit_row_uids",
+        "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+    },
+    "Packing Slip": {
+        "validate": "export.api.kit_utils.validate_kit_row_uids",
+        "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+    },
 }
 
 override_whitelisted_methods = {

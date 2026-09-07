@@ -1,6 +1,8 @@
 import frappe
 from frappe.utils import flt
 
+from export.api.kit_utils import ensure_kit_row_uids
+
 
 # Parent-level fields to copy from Delivery Note → Packing Slip (same name on both).
 PARENT_FIELDS = [
@@ -146,13 +148,47 @@ def make_packing_slip_custom(source_name, target_doc=None):
         if hasattr(dn_item, "weight_per_unit"):
             ps_item.net_weight = flt(dn_item.weight_per_unit)
 
-    # --- Carry forward sub items (only for parent items present in this PS) ---
+    # --- Carry forward sub items, matched row-to-row via custom_row_uid ---
+    #
+    # dn_item_map (built above from dn_detail) already tells us exactly which
+    # DN item row each PS item row came from. Use that row's custom_row_uid to
+    # pull only the sub-items that belong to THAT specific row — not every
+    # sub-item whose parent_item code merely happens to match somewhere in the
+    # PS. This mirrors the row-uid matching already used for SO -> Delivery
+    # Note / Sales Invoice in export/config/py/sales_order.py.
+    #
+    # Legacy fallback: sub-items with no parent_row_uid predate uid tracking
+    # and can't be linked to a specific row, so they're still carried forward
+    # by item-code presence (old behaviour) to avoid losing legacy data.
     if dn.custom_sub_items:
+        # Propagate each PS item's linked DN row uid explicitly — don't rely on
+        # get_mapped_doc having copied it — and collect which uids ended up in
+        # this PS at all.
+        included_uids = set()
+        for ps_item in doc.items:
+            dn_item = dn_item_map.get(ps_item.dn_detail)
+            if dn_item and dn_item.custom_row_uid:
+                ps_item.custom_row_uid = dn_item.custom_row_uid
+                included_uids.add(dn_item.custom_row_uid)
+
         ps_item_codes = {ps_item.item_code for ps_item in doc.items}
+        existing = {
+            (row.parent_row_uid, row.sub_item_code)
+            for row in doc.custom_sub_items
+        }
+
         for sub in dn.custom_sub_items:
-            parent_item = (sub.parent_item or "").strip()
-            if parent_item not in ps_item_codes:
+            if sub.parent_row_uid:
+                if sub.parent_row_uid not in included_uids:
+                    continue
+            else:
+                parent_item = (sub.parent_item or "").strip()
+                if parent_item not in ps_item_codes:
+                    continue
+
+            if (sub.parent_row_uid, sub.sub_item_code) in existing:
                 continue
+
             new_sub = doc.append("custom_sub_items", {})
             for field in SUB_ITEM_SAME_FIELDS:
                 if hasattr(sub, field):
@@ -160,5 +196,12 @@ def make_packing_slip_custom(source_name, target_doc=None):
             for src_f, dst_f in SUB_ITEM_FIELD_REMAP.items():
                 if hasattr(sub, src_f):
                     setattr(new_sub, dst_f, getattr(sub, src_f))
+            existing.add((sub.parent_row_uid, sub.sub_item_code))
+
+    # Self-heal: if the source DN still has KIT item rows with no linked
+    # sub-items at all (pre-fix legacy data not yet resaved), generate them
+    # here so the Packing Slip isn't missing KIT details even before the DN
+    # itself gets fixed.
+    ensure_kit_row_uids(doc)
 
     return doc
