@@ -252,17 +252,19 @@ boot_session = [
 ]
 
 doctype_js = {
-    "Sales Order": "public/js/sales_order.js",
-    "Sales Invoice": "public/js/sales_invoice.js",
-    "Delivery Note": "public/js/delivery_note.js",
+    "Sales Order": ["public/js/sales_order.js", "public/js/discount_percentage_fix.js"],
+    "Sales Invoice": ["public/js/sales_invoice.js", "public/js/discount_percentage_fix.js"],
+    "Delivery Note": ["public/js/delivery_note.js", "public/js/discount_percentage_fix.js"],
     "Packing Slip": "public/js/packing_slip.js",
-    "Purchase Order": "public/js/purchase_order.js",
-    "Purchase Receipt": "public/js/purchase_receipt.js",
-    "Purchase Invoice": "public/js/purchase_invoice.js",
+    "Purchase Order": ["public/js/purchase_order.js", "public/js/discount_percentage_fix.js"],
+    "Purchase Receipt": ["public/js/purchase_receipt.js", "public/js/discount_percentage_fix.js"],
+    "Purchase Invoice": ["public/js/purchase_invoice.js", "public/js/discount_percentage_fix.js"],
     "Journal Entry": "public/js/journal_entry.js",
     "Exchange Rate Revaluation": "public/js/exchange_rate_revaluation.js",
     "Payment Entry": "public/js/payment_entry.js",
-    "Quotation": "public/js/quotation.js"
+    "Quotation": ["public/js/quotation.js", "public/js/discount_percentage_fix.js"],
+    "POS Invoice": "public/js/discount_percentage_fix.js",
+    "Supplier Quotation": "public/js/discount_percentage_fix.js"
 }
 
 # Fixtures
