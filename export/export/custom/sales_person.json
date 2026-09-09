@@ -130,5 +130,8 @@
   }
  ],
  "property_setters": [],
+ "custom_perms": [],
+ "doctype": "Sales Person",
+ "links": [],
  "sync_on_migrate": 1
 }
