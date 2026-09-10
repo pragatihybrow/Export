@@ -158,3 +158,35 @@ def validate_kit_row_uids(doc, method=None):
                 "review": result["review"],
             }),
         )
+
+
+def sync_sub_item_return_sign(doc, method=None, sub_items_field="custom_sub_items"):
+    """
+    Keep custom_sub_items qty sign consistent with the parent document's
+    return direction (doc.is_return).
+
+    When a Credit/Debit Note (or a return Delivery Note/Purchase Receipt) is
+    created from a normal document, core ERPNext (get_mapped_doc /
+    make_return_doc) only knows how to negate qty on its own "Item" child
+    table (and Packed Item) — it has no awareness of this app's custom
+    custom_sub_items table, so those rows keep whatever sign they had on the
+    source document. That mismatch (parent items negative, sub-items still
+    positive) then reaches erpnext.controllers.status_updater.validate_qty,
+    which walks every child table row with a "qty" field: it raises "quantity
+    must be negative/positive", formatting the message with d.item_code — a
+    field this sub-item doctype doesn't have (it has sub_item_code instead),
+    turning what should be a normal validation message into an
+    AttributeError that crashes the save.
+
+    Hooked on "before_validate" (fires before the core validate() call that
+    does this check — see frappe.model.document.Document._validate) so the
+    sign is already correct by the time that check runs, instead of trying
+    to patch it from a "validate" hook, which runs too late.
+    """
+    is_return = bool(doc.get("is_return"))
+    for row in doc.get(sub_items_field) or []:
+        qty = flt(row.qty)
+        if is_return and qty > 0:
+            row.qty = -qty
+        elif not is_return and qty < 0:
+            row.qty = -qty

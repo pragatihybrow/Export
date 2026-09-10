@@ -284,6 +284,7 @@ doc_events = {
         "on_submit": "export.api.item.bom_on_submit",
     },
     "Purchase Invoice": {
+        "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
         "validate": "export.api.purchase_invoice.validate",
     },
     "Journal Entry": {
@@ -295,6 +296,7 @@ doc_events = {
         "on_submit": "export.api.payment_entry.round_payment_entry_gl_amounts",
     },
     "Sales Invoice": {
+        "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
         "validate": "export.api.sales_invoice.validate",
         "on_submit": "export.api.sales_invoice.round_sales_invoice_gl_amounts",
     },
@@ -313,12 +315,16 @@ doc_events = {
         "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
     },
     "Delivery Note": {
+        "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
         "validate": "export.api.kit_utils.validate_kit_row_uids",
         "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
     },
     "Packing Slip": {
         "validate": "export.api.kit_utils.validate_kit_row_uids",
         "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+    },
+    "Purchase Receipt": {
+        "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
     },
 }
 
