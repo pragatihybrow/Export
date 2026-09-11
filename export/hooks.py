@@ -280,6 +280,9 @@ doc_events = {
     "Item": {
         "before_save": "export.api.item.before_save",
     },
+    "Customer": {
+        "before_insert": "export.api.customer.set_customer_id_no",
+    },
     "BOM": {
         "on_submit": "export.api.item.bom_on_submit",
     },
