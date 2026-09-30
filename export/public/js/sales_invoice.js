@@ -1030,13 +1030,8 @@ function calculate_si_cif_totals(frm) {
             return sum + (row.base_tax_amount || 0);
         }, 0);
 
-        if (updated_total_inr > 0) {
-            if (round_off_inr < 0) {
-                round_off_inr += updated_total_inr;
-            } else {
-                round_off_inr -= updated_total_inr;
-            }
-        }
+        // Ticked rows are already inside base_grand_total; add them back to exclude them
+        round_off_inr += updated_total_inr;
 
         frm.set_value("custom_rounding_error_currency_conversion",Math.abs(round_off_inr));
 
@@ -1061,13 +1056,8 @@ function calculate_si_cif_totals(frm) {
             return sum + (row.tax_amount || 0);
         }, 0);
 
-        if (updated_total_usd > 0) {
-            if (round_off_usd < 0) {
-                round_off_usd += updated_total_usd;
-            } else {
-                round_off_usd -= updated_total_usd;
-            }
-        }
+        // Ticked rows are already inside grand_total; add them back to exclude them
+        round_off_usd += updated_total_usd;
 
         frm.set_value("custom_rounding_error_usd",Math.abs(round_off_usd));
         // if (flt(frm.doc.custom_rounding_error_currency_conversion) !== rounding_error) {
