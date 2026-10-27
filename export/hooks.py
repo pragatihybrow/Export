@@ -252,11 +252,19 @@ boot_session = [
 ]
 
 doctype_js = {
-    "Sales Order": ["public/js/sales_order.js", "public/js/discount_percentage_fix.js"],
+    "Sales Order": [
+        "public/js/sales_order.js",
+        "public/js/discount_percentage_fix.js",
+        "public/js/so_item_close.js",
+    ],
     "Sales Invoice": ["public/js/sales_invoice.js", "public/js/discount_percentage_fix.js"],
     "Delivery Note": ["public/js/delivery_note.js", "public/js/discount_percentage_fix.js"],
     "Packing Slip": "public/js/packing_slip.js",
-    "Purchase Order": ["public/js/purchase_order.js", "public/js/discount_percentage_fix.js"],
+    "Purchase Order": [
+        "public/js/purchase_order.js",
+        "public/js/discount_percentage_fix.js",
+        "public/js/po_item_close.js",
+    ],
     "Purchase Receipt": ["public/js/purchase_receipt.js", "public/js/discount_percentage_fix.js"],
     "Purchase Invoice": ["public/js/purchase_invoice.js", "public/js/discount_percentage_fix.js"],
     "Journal Entry": "public/js/journal_entry.js",
@@ -288,7 +296,15 @@ doc_events = {
     },
     "Purchase Invoice": {
         "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
-        "validate": "export.api.purchase_invoice.validate",
+        "validate": [
+            "export.api.purchase_invoice.validate",
+            "export.api.po_item_close.validate_purchase_invoice",
+        ],
+        "on_submit": [
+            "export.api.po_item_close.sync_closed_qty",
+            "export.api.po_item_close.auto_close_linked_purchase_orders",
+        ],
+        "on_cancel": "export.api.po_item_close.sync_closed_qty",
     },
     "Journal Entry": {
         "before_save": "export.api.journal_entry.round_exchange_gain_loss_amounts",
@@ -300,8 +316,16 @@ doc_events = {
     },
     "Sales Invoice": {
         "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
-        "validate": "export.api.sales_invoice.validate",
-        "on_submit": "export.api.sales_invoice.round_sales_invoice_gl_amounts",
+        "validate": [
+            "export.api.sales_invoice.validate",
+            "export.api.so_item_close.validate_sales_invoice",
+        ],
+        "on_submit": [
+            "export.api.sales_invoice.round_sales_invoice_gl_amounts",
+            "export.api.so_item_close.sync_closed_qty",
+            "export.api.so_item_close.auto_close_linked_sales_orders",
+        ],
+        "on_cancel": "export.api.so_item_close.sync_closed_qty",
     },
     # Backfill custom_row_uid + KIT sub-items for any item row that has a KIT
     # (Item.custom_sub_items) definition but no linked sub-items yet — covers
@@ -314,13 +338,42 @@ doc_events = {
     # instead, so both are hooked here to cover edits made after submission too
     # (e.g. re-running "Get Items From" on an already-submitted Delivery Note).
     "Sales Order": {
-        "validate": "export.api.kit_utils.validate_kit_row_uids",
-        "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+        "validate": [
+            "export.api.kit_utils.validate_kit_row_uids",
+            "export.api.so_item_close.validate_sales_order",
+        ],
+        "before_update_after_submit": [
+            "export.api.kit_utils.validate_kit_row_uids",
+            "export.api.so_item_close.before_sales_order_update",
+        ],
+        # Item-level close via the row's "Item Closed" checkbox + Update
+        "on_update_after_submit": "export.api.so_item_close.after_sales_order_update",
     },
     "Delivery Note": {
         "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
-        "validate": "export.api.kit_utils.validate_kit_row_uids",
+        "validate": [
+            "export.api.kit_utils.validate_kit_row_uids",
+            "export.api.so_item_close.validate_delivery_note",
+        ],
         "before_update_after_submit": "export.api.kit_utils.validate_kit_row_uids",
+        "on_submit": [
+            "export.api.so_item_close.sync_closed_qty",
+            "export.api.so_item_close.auto_close_linked_sales_orders",
+        ],
+        "on_cancel": "export.api.so_item_close.sync_closed_qty",
+    },
+    # Item-level Sales Order close (export/api/so_item_close.py): closed SO rows
+    # cannot be ordered from suppliers either.
+    # Item-level Purchase Order close (export/api/po_item_close.py) via the row's
+    # "Item Closed" checkbox + Update, same as the Sales Order.
+    "Purchase Order": {
+        "before_validate": "export.api.so_item_close.strip_closed_rows_from_purchase_order",
+        "validate": [
+            "export.api.so_item_close.validate_purchase_order",
+            "export.api.po_item_close.validate_purchase_order",
+        ],
+        "before_update_after_submit": "export.api.po_item_close.before_purchase_order_update",
+        "on_update_after_submit": "export.api.po_item_close.after_purchase_order_update",
     },
     "Packing Slip": {
         "validate": "export.api.kit_utils.validate_kit_row_uids",
@@ -328,6 +381,12 @@ doc_events = {
     },
     "Purchase Receipt": {
         "before_validate": "export.api.kit_utils.sync_sub_item_return_sign",
+        "validate": "export.api.po_item_close.validate_purchase_receipt",
+        "on_submit": [
+            "export.api.po_item_close.sync_closed_qty",
+            "export.api.po_item_close.auto_close_linked_purchase_orders",
+        ],
+        "on_cancel": "export.api.po_item_close.sync_closed_qty",
     },
 }
 
@@ -349,7 +408,30 @@ override_whitelisted_methods = {
     # consolidated lines before the invoice is created
     "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice":
         "export.api.delivery_note_to_si.make_sales_invoice_custom",
+
+    # Item-level Sales / Purchase Order close: closed rows cannot be edited via
+    # Update Items (Sales and Purchase Order) or mapped into Purchase Orders
+    # (see export/api/so_item_close.py)
+    "erpnext.controllers.accounts_controller.update_child_qty_rate":
+        "export.api.so_item_close.update_child_qty_rate",
+    "erpnext.selling.doctype.sales_order.sales_order.make_purchase_order":
+        "export.api.so_item_close.make_purchase_order",
+    "erpnext.selling.doctype.sales_order.sales_order.make_purchase_order_for_default_supplier":
+        "export.api.so_item_close.make_purchase_order_for_default_supplier",
+
+    # Item-level Purchase Order close: closed rows are skipped when receiving or
+    # invoicing from the Purchase Order (see export/api/po_item_close.py)
+    "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_receipt":
+        "export.api.po_item_close.make_purchase_receipt",
+    "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice":
+        "export.api.po_item_close.make_purchase_invoice",
 }
+
+# Item-level Sales / Purchase Order close: release reserved / ordered qty of closed rows
+# (wraps erpnext.stock.stock_balance.get_reserved_qty and get_purchase_order_qty,
+# see export/api/so_reserved_qty.py and export/api/po_ordered_qty.py)
+before_request = ["export.api.so_reserved_qty.apply", "export.api.po_ordered_qty.apply"]
+before_job = ["export.api.so_reserved_qty.apply", "export.api.po_ordered_qty.apply"]
 
 naming_series_variables = {
     "EXFY": "export.naming.parse_fiscal_year",          # e.g. 25-26

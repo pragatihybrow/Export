@@ -4,6 +4,8 @@ from erpnext.selling.doctype.sales_order.sales_order import (
     make_delivery_note,
 )
 
+from export.api.so_item_close import remove_closed_rows
+
 
 # ── Module-level field lists ──────────────────────────────────────────────────
 
@@ -193,6 +195,8 @@ def make_sales_invoice_custom(source_name, target_doc=None, ignore_permissions=F
         ignore_permissions = False
 
     doc = make_sales_invoice(source_name, target_doc=target_doc, ignore_permissions=ignore_permissions, args=args)
+    # Item-closed SO rows cannot be invoiced (see export/api/so_item_close.py).
+    remove_closed_rows(doc, "so_detail")
 
     so = frappe.get_doc("Sales Order", source_name)
     doc.custom_order_type = so.order_type
@@ -246,6 +250,9 @@ def make_delivery_note_custom(source_name, target_doc=None, ignore_permissions=F
     accepts it as its own `kwargs` parameter.
     """
     doc = make_delivery_note(source_name, target_doc, ignore_permissions)
+    # Item-closed SO rows cannot be delivered (see export/api/so_item_close.py).
+    # Removed before the sub-item carry-forward so their KIT sub items are skipped too.
+    remove_closed_rows(doc, "so_detail")
 
     so = frappe.get_doc("Sales Order", source_name)
     doc.custom_order_type = so.order_type
